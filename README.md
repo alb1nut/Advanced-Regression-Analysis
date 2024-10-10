@@ -1,4 +1,4 @@
-# Advanced Regression Analysis Assignment
+# Advanced Regression Analysis 
 
 ## Project Overview
 
