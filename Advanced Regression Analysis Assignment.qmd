@@ -1,0 +1,105 @@
+---
+title: "Advanced Regression Analysis Assignment"
+format: html
+editor: visual
+---
+
+Team: 
+Albert Nutifafa Dovlo ,
+Babs-Olawoyin Eunice Adelola
+
+
+```{r}
+library(car)
+data(Salaries)
+```
+
+
+#1. Visualize salary using a histogram and a Q-Q plot after logarithmic transformation
+```{r}
+
+hist(log(Salaries$salary), main="Histogram of Log(Salary)", xlab="Log(Salary)")
+qqnorm(log(Salaries$salary))
+qqline(log(Salaries$salary))
+```
+
+#2. Fit a linear model for the logarithm of salary
+```{r}
+model2 <- lm(log(salary) ~ sex + rank + discipline + yrs.since.phd, data = Salaries)
+summary(model2)
+
+#Statistically significant:
+#Intercept, rankAssocProf, rankProf,disciplineB
+```
+
+
+
+#3. Fit a linear model to test the differential impact of years since PhD for males and females
+```{r}
+
+model3 <- lm(log(salary) ~ sex * yrs.since.phd + rank + discipline, data = Salaries)
+summary(model3)
+
+
+#The coefficient for sexMale:yrs.since.phd is approximately -0.0012207.
+
+#There is no significant difference
+```
+
+
+#4. Plot coefficients for all effects using coefplot
+```{r}
+library(coefplot)
+coefplot(model2)
+coefplot(model3)
+```
+
+
+#5. Use relaimpo package to find the relative importance of each predictor
+
+```{r}
+library(relaimpo)
+```
+
+#Transform dataset to data frame with dummy variables
+
+```{r}
+Salaries2 <- model.matrix(log(salary) ~ sex + rank + discipline + yrs.since.phd, data = Salaries)
+Salaries2 <- as.data.frame(cbind(Salaries$salary, Salaries2))
+colnames(Salaries2)[1] <- "salary"
+Salaries2 <- Salaries2[, -2] 
+```
+
+
+
+```{r}
+# Rebuild the regression
+model1_new <- lm(log(salary) ~ ., data = Salaries2)
+```
+
+```{r}
+# Summary of the new model
+summary(model1_new)
+```
+
+
+```{r}
+# Use relaimpo to compute LMG and car metrics
+lmg_metric <- calc.relimp(model1_new, type = "lmg")
+car_metric <- calc.relimp(model1_new, type = "car")
+```
+
+```{r}
+# Compare the results
+print(lmg_metric)
+print(car_metric)
+
+
+#We can point some differences in the hierarchy of predictors in terms of their relative importance by comparing the two metrics, :
+
+#- For both metrics, "rankProf" has the highest relative importance among the predictors.
+#- The ordering of predictors in terms of their importance is somewhat consistent between the two metrics, but there are differences in the magnitude of importance assigned to each predictor.
+
+#In conclusion, while there are similarities in the hierarchy of predictors between the LMG and CAR metrics, the exact values and rankings may vary. It's not uncommon for different metrics to provide slightly different perspectives on the importance of predictors. It's important to interpret these metrics in the context of your specific analysis and research question.
+```
+
